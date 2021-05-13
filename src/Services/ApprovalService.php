@@ -1,9 +1,9 @@
 <?php
 
-namespace Rutatiina\Estimate\Services;
+namespace Rutatiina\RetainerInvoice\Services;
 
-use Rutatiina\FinancialAccounting\Services\AccountBalanceService;
-use Rutatiina\FinancialAccounting\Services\ContactBalanceService;
+use Rutatiina\FinancialAccounting\Services\AccountBalanceUpdateService;
+use Rutatiina\FinancialAccounting\Services\ContactBalanceUpdateService;
 
 trait ApprovalService
 {
@@ -18,10 +18,10 @@ trait ApprovalService
         //$this->inventory(); //currentlly inventory update for estimates is disabled
 
         //Update the account balances
-        AccountBalanceService::update($data['ledgers']);
+        AccountBalanceUpdateService::update($data['ledgers']);
 
         //Update the contact balances
-        ContactBalanceService::update($data['ledgers']);
+        ContactBalanceUpdateService::update($data['ledgers']);
 
         return true;
     }

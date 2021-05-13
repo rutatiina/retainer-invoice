@@ -1,16 +1,11 @@
 <?php
 
-namespace Rutatiina\Estimate\Services;
+namespace Rutatiina\RetainerInvoice\Services;
 
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Rutatiina\Estimate\Models\Estimate;
-use Rutatiina\Estimate\Models\EstimateItem;
-use Rutatiina\Estimate\Models\EstimateItemTax;
+use Rutatiina\RetainerInvoice\Models\RetainerInvoiceItem;
+use Rutatiina\RetainerInvoice\Models\RetainerInvoiceItemTax;
 
-class EstimateItemService
+class RetainerInvoiceItemService
 {
     public static $errors = [];
 
@@ -31,12 +26,12 @@ class EstimateItemService
             $itemTaxes = (is_array($item['taxes'])) ? $item['taxes'] : [] ;
             unset($item['taxes']);
 
-            $itemModel = EstimateItem::create($item);
+            $itemModel = RetainerInvoiceItem::create($item);
 
             foreach ($itemTaxes as $tax)
             {
                 //save the taxes attached to the item
-                $itemTax = new EstimateItemTax;
+                $itemTax = new RetainerInvoiceItemTax;
                 $itemTax->tenant_id = $item['tenant_id'];
                 $itemTax->estimate_id = $item['estimate_id'];
                 $itemTax->estimate_item_id = $itemModel->id;

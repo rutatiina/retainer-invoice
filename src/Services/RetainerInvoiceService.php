@@ -1,19 +1,19 @@
 <?php
 
-namespace Rutatiina\Estimate\Services;
+namespace Rutatiina\RetainerInvoice\Services;
 
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Rutatiina\Estimate\Models\Estimate;
-use Rutatiina\Estimate\Models\EstimateItem;
-use Rutatiina\Estimate\Models\EstimateItemTax;
-use Rutatiina\FinancialAccounting\Services\AccountBalanceService;
-use Rutatiina\FinancialAccounting\Services\ContactBalanceService;
+use Rutatiina\RetainerInvoice\Models\RetainerInvoice;
+use Rutatiina\RetainerInvoice\Models\RetainerInvoiceItem;
+use Rutatiina\RetainerInvoice\Models\RetainerInvoiceItemTax;
+use Rutatiina\FinancialAccounting\Services\AccountBalanceUpdateService;
+use Rutatiina\FinancialAccounting\Services\ContactBalanceUpdateService;
 use Rutatiina\Tax\Models\Tax;
 
-class EstimateService
+class RetainerInvoiceService
 {
     public static $errors = [];
 
@@ -26,7 +26,7 @@ class EstimateService
     {
         $taxes = Tax::all()->keyBy('code');
 
-        $txn = Estimate::findOrFail($id);
+        $txn = RetainerInvoice::findOrFail($id);
         $txn->load('contact', 'financial_account', 'items.taxes');
         $txn->setAppends(['taxes']);
 
@@ -100,7 +100,7 @@ class EstimateService
 
         try
         {
-            $Txn = new Estimate;
+            $Txn = new RetainerInvoice;
             $Txn->tenant_id = $data['tenant_id'];
             $Txn->created_by = Auth::id();
             $Txn->document_name = $data['document_name'];
@@ -133,7 +133,7 @@ class EstimateService
             //print_r($data['items']); exit;
 
             //Save the items >> $data['items']
-            EstimateItemService::store($data);
+            RetainerInvoiceItemService::store($data);
 
             //Save the ledgers >> $data['ledgers']; and update the balances
             //NOTE >> no need to update ledgers since this is not an accounting entry
@@ -187,7 +187,7 @@ class EstimateService
 
         try
         {
-            $Txn = Estimate::with('items', 'ledgers')->findOrFail($data['id']);
+            $Txn = RetainerInvoice::with('items', 'ledgers')->findOrFail($data['id']);
 
             if ($Txn->status == 'Approved')
             {
@@ -201,10 +201,10 @@ class EstimateService
             $Txn->comments()->delete();
 
             //reverse the account balances
-            AccountBalanceService::update($Txn->ledgers, true);
+            AccountBalanceUpdateService::update($Txn->ledgers, true);
 
             //reverse the contact balances
-            ContactBalanceService::update($Txn->ledgers, true);
+            ContactBalanceUpdateService::update($Txn->ledgers, true);
 
             $Txn->tenant_id = $data['tenant_id'];
             $Txn->created_by = Auth::id();
@@ -238,7 +238,7 @@ class EstimateService
             //print_r($data['items']); exit;
 
             //Save the items >> $data['items']
-            EstimateItemService::store($data);
+            RetainerInvoiceItemService::store($data);
 
             //Save the ledgers >> $data['ledgers']; and update the balances
             //NOTE >> no need to update ledgers since this is not an accounting entry
@@ -283,7 +283,7 @@ class EstimateService
 
         try
         {
-            $Txn = Estimate::findOrFail($id);
+            $Txn = RetainerInvoice::findOrFail($id);
 
             if ($Txn->status == 'Approved')
             {
@@ -296,10 +296,10 @@ class EstimateService
             $Txn->item_taxes()->delete();
 
             //reverse the account balances
-            AccountBalanceService::update($Txn->ledgers, true);
+            AccountBalanceUpdateService::update($Txn->ledgers, true);
 
             //reverse the contact balances
-            ContactBalanceService::update($Txn->ledgers, true);
+            ContactBalanceUpdateService::update($Txn->ledgers, true);
 
             $Txn->delete();
 

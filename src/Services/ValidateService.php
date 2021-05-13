@@ -1,10 +1,10 @@
 <?php
 
-namespace Rutatiina\Estimate\Services;
+namespace Rutatiina\RetainerInvoice\Services;
 
 use Illuminate\Support\Facades\Validator;
 use Rutatiina\Contact\Models\Contact;
-use Rutatiina\Estimate\Models\Setting;
+use Rutatiina\RetainerInvoice\Models\Setting;
 
 class ValidateService
 {
