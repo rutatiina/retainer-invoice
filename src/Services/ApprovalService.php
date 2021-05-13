@@ -18,10 +18,10 @@ trait ApprovalService
         //$this->inventory(); //currentlly inventory update for estimates is disabled
 
         //Update the account balances
-        AccountBalanceUpdateService::update($data['ledgers']);
+        AccountBalanceUpdateService::doubleEntry($data['ledgers']);
 
         //Update the contact balances
-        ContactBalanceUpdateService::update($data['ledgers']);
+        ContactBalanceUpdateService::doubleEntry($data['ledgers']);
 
         return true;
     }

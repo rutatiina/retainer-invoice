@@ -2,14 +2,16 @@
 
 namespace Rutatiina\RetainerInvoice\Http\Controllers;
 
+use Rutatiina\Estimate\Services\EstimateService;
 use Rutatiina\RetainerInvoice\Models\Setting;
-use URL;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use Illuminate\Support\Facades\View;
+use Rutatiina\RetainerInvoice\Services\RetainerInvoiceService;
 use Rutatiina\Tax\Models\Tax;
 use Rutatiina\RetainerInvoice\Models\RetainerInvoice;
 use Rutatiina\FinancialAccounting\Classes\Transaction;
@@ -31,23 +33,27 @@ use Rutatiina\RetainerInvoice\Classes\Update as TxnUpdate;
 class RetainerInvoiceController extends Controller
 {
     use ContactTrait;
-    use ItemsSelect2DataTrait; //calls AccountingTrait
-    use TxnItem; // >> get the item attributes template << !!important
+    use ItemsSelect2DataTrait;
 
-    private  $txnEntreeSlug = 'retainer-invoice';
+    //calls AccountingTrait
+
+    use TxnItem;
+
+    // >> get the item attributes template << !!important
 
     public function __construct()
     {
         $this->middleware('permission:retainer-invoices.view');
-		$this->middleware('permission:retainer-invoices.create', ['only' => ['create','store']]);
-		$this->middleware('permission:retainer-invoices.update', ['only' => ['edit','update']]);
-		$this->middleware('permission:retainer-invoices.delete', ['only' => ['destroy']]);
+        $this->middleware('permission:retainer-invoices.create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:retainer-invoices.update', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:retainer-invoices.delete', ['only' => ['destroy']]);
     }
 
     public function index(Request $request)
     {
         //load the vue version of the app
-        if (!FacadesRequest::wantsJson()) {
+        if (!FacadesRequest::wantsJson())
+        {
             return view('l-limitless-bs4.layout_2-ltr-default.appVue');
         }
 
@@ -55,7 +61,8 @@ class RetainerInvoiceController extends Controller
 
         if ($request->contact)
         {
-            $query->where(function($q) use ($request) {
+            $query->where(function ($q) use ($request)
+            {
                 $q->where('debit_contact_id', $request->contact);
                 $q->orWhere('credit_contact_id', $request->contact);
             });
@@ -73,13 +80,14 @@ class RetainerInvoiceController extends Controller
         $txn = RetainerInvoice::latest()->first();
         $settings = Setting::first();
 
-        return $settings->number_prefix.(str_pad((optional($txn)->number+1), $settings->minimum_number_length, "0", STR_PAD_LEFT)).$settings->number_postfix;
+        return $settings->number_prefix . (str_pad((optional($txn)->number + 1), $settings->minimum_number_length, "0", STR_PAD_LEFT)) . $settings->number_postfix;
     }
 
     public function create()
     {
         //load the vue version of the app
-        if (!FacadesRequest::wantsJson()) {
+        if (!FacadesRequest::wantsJson())
+        {
             return view('l-limitless-bs4.layout_2-ltr-default.appVue');
         }
 
@@ -124,22 +132,24 @@ class RetainerInvoiceController extends Controller
     public function store(Request $request)
     {
         $TxnStore = new TxnStore();
-        $TxnStore->txnEntreeSlug = $this->txnEntreeSlug;
         $TxnStore->txnInsertData = $request->all();
         $insert = $TxnStore->run();
 
-        if ($insert == false) {
+        $storeService = RetainerInvoiceService::store($request);
+
+        if ($storeService == false)
+        {
             return [
-                'status'    => false,
-                'messages'   => $TxnStore->errors
+                'status' => false,
+                'messages' => RetainerInvoiceService::$errors
             ];
         }
 
         return [
-            'status'    => true,
-            'messages'   => ['Retainer Invoice saved'],
-            'number'    => 0,
-            'callback'  => URL::route('retainer-invoices.show', [$insert->id], false)
+            'status' => true,
+            'messages' => ['Retainer Invoice saved'],
+            'number' => 0,
+            'callback' => URL::route('retainer-invoices.show', [$storeService->id], false)
         ];
 
     }
@@ -147,102 +157,112 @@ class RetainerInvoiceController extends Controller
     public function show($id)
     {
         //load the vue version of the app
-        if (!FacadesRequest::wantsJson()) {
+        if (!FacadesRequest::wantsJson())
+        {
             return view('l-limitless-bs4.layout_2-ltr-default.appVue');
         }
 
-        if (FacadesRequest::wantsJson()) {
-            $TxnRead = new TxnRead();
-            return $TxnRead->run($id);
-        }
+        $txn = RetainerInvoice::findOrFail($id);
+        $txn->load('contact', 'items.taxes');
+        $txn->setAppends([
+            'taxes',
+            'number_string',
+            'total_in_words',
+        ]);
+
+        return $txn->toArray();
     }
 
     public function edit($id)
     {
         //load the vue version of the app
-        if (!FacadesRequest::wantsJson()) {
+        if (!FacadesRequest::wantsJson())
+        {
             return view('l-limitless-bs4.layout_2-ltr-default.appVue');
         }
 
-        $TxnEdit = new TxnEdit();
-        $txnAttributes = $TxnEdit->run($id);
+        $txnAttributes = RetainerInvoiceService::edit($id);
 
         $data = [
-            'pageTitle' => 'Edit Estimate', #required
+            'pageTitle' => 'Edit Retainer Invoice', #required
             'pageAction' => 'Edit', #required
-            'txnUrlStore' => '/retainer-invoices/'.$id, #required
+            'txnUrlStore' => '/retainer-invoices/' . $id, #required
             'txnAttributes' => $txnAttributes, #required
         ];
 
-        if (FacadesRequest::wantsJson()) {
-            return $data;
-        }
+        return $data;
     }
 
-    public function update($id, Request $request)
+    public function update(Request $request)
     {
-        $TxnStore = new TxnUpdate();
-        $TxnStore->txnEntreeSlug = $this->txnEntreeSlug;
-        $TxnStore->txnInsertData = $request->all();
-        $insert = $TxnStore->run();
+        //print_r($request->all()); exit;
 
-        if ($insert == false) {
+        $storeService = RetainerInvoiceService::update($request);
+
+        if ($storeService == false)
+        {
             return [
-                'status'    => false,
-                'messages'  => $TxnStore->errors
+                'status' => false,
+                'messages' => RetainerInvoiceService::$errors
             ];
         }
 
         return [
-            'status'    => true,
-            'messages'  => ['Retainer invoice updated'],
-            'number'    => 0,
-            'callback'  => URL::route('retainer-invoices.show', [$insert->id], false)
+            'status' => true,
+            'messages' => ['Retainer invoice updated'],
+            'number' => 0,
+            'callback' => URL::route('estimates.show', [$storeService->id], false)
         ];
     }
 
     public function destroy($id)
-	{
-		$delete = Transaction::delete($id);
+    {
+        $destroy = RetainerInvoiceService::destroy($id);
 
-		if ($delete) {
-			return [
-				'status' => true,
-				'message' => 'Retainer Invoice deleted',
-			];
-		} else {
-			return [
-				'status' => false,
-				'message' => implode('<br>', array_values(Transaction::$rg_errors))
-			];
-		}
-	}
+        if ($destroy)
+        {
+            return [
+                'status' => true,
+                'messages' => ['Retainer Invoice deleted'],
+                'callback' => URL::route('retainer-invoices.index', [], false)
+            ];
+        }
+        else
+        {
+            return [
+                'status' => false,
+                'messages' => RetainerInvoiceService::$errors
+            ];
+        }
+    }
 
-	#-----------------------------------------------------------------------------------
+    #-----------------------------------------------------------------------------------
 
     public function approve($id)
     {
         $TxnApprove = new TxnApprove();
         $approve = $TxnApprove->run($id);
 
-        if ($approve == false) {
+        if ($approve == false)
+        {
             return [
-                'status'    => false,
-                'messages'   => $TxnApprove->errors
+                'status' => false,
+                'messages' => $TxnApprove->errors
             ];
         }
 
         return [
-            'status'    => true,
-            'messages'   => ['Retainer Invoice Approved'],
+            'status' => true,
+            'messages' => ['Retainer Invoice Approved'],
         ];
 
     }
 
     public function copy($id)
-	{
+    {
         //load the vue version of the app
-        if (!FacadesRequest::wantsJson()) {
+        if (!FacadesRequest::wantsJson())
+        {
             return view('l-limitless-bs4.layout_2-ltr-default.appVue');
         }
 
@@ -250,7 +270,7 @@ class RetainerInvoiceController extends Controller
         $txnAttributes = $TxnCopy->run($id);
 
         $TxnNumber = new TxnNumber();
-        $txnAttributes['number'] = $TxnNumber->run($this->txnEntreeSlug);
+        $txnAttributes['number'] = null;
 
         $data = [
             'pageTitle' => 'Copy Retainer Invoice', #required
@@ -259,32 +279,33 @@ class RetainerInvoiceController extends Controller
             'txnAttributes' => $txnAttributes, #required
         ];
 
-        if (FacadesRequest::wantsJson()) {
+        if (FacadesRequest::wantsJson())
+        {
             return $data;
         }
 
         $txn = Transaction::transaction($id);
-        $txn->number = Transaction::entreeNextNumber($this->txnEntreeSlug);
+        $txn->number = null;
         return view('accounting::sales.retainer-invoices.copy')->with([
-            'txn'       => $txn,
-            'contacts'  => static::contactsByTypes(['customer']),
-            'taxes'     => self::taxes()
+            'txn' => $txn,
+            'contacts' => static::contactsByTypes(['customer']),
+            'taxes' => self::taxes()
         ]);
     }
 
     public function datatables(Request $request)
-	{
+    {
 
         $txns = Transaction::setRoute('show', route('accounting.sales.retainer-invoices.show', '_id_'))
-			->setRoute('edit', route('accounting.sales.retainer-invoices.edit', '_id_'))
-			->setSortBy($request->sort_by)
-			->paginate(false)
-			->findByEntree($this->txnEntreeSlug);
+            ->setRoute('edit', route('accounting.sales.retainer-invoices.edit', '_id_'))
+            ->setSortBy($request->sort_by)
+            ->paginate(false);
 
         return Datatables::of($txns)->make(true);
     }
 
-    public function exportToExcel(Request $request) {
+    public function exportToExcel(Request $request)
+    {
 
         $txns = collect([]);
 
@@ -298,7 +319,8 @@ class RetainerInvoiceController extends Controller
             ' ', //Currency
         ]);
 
-        foreach (array_reverse($request->ids) as $id) {
+        foreach (array_reverse($request->ids) as $id)
+        {
             $txn = Transaction::transaction($id);
 
             $txns->push([
@@ -313,7 +335,7 @@ class RetainerInvoiceController extends Controller
         }
 
         $export = $txns->downloadExcel(
-            'maccounts-retainer-invoices-export-'.date('Y-m-d-H-m-s').'.xlsx',
+            'maccounts-retainer-invoices-export-' . date('Y-m-d-H-m-s') . '.xlsx',
             null,
             false
         );

@@ -31,7 +31,7 @@ class ValidateService
             'contact_id' => 'required|numeric',
             'date' => 'required|date',
             'base_currency' => 'required',
-            'document_id' => 'numeric|nullable',
+            'due_date' => 'date|nullable',
             'salesperson_contact_id' => 'numeric|nullable',
             'memo' => 'string|nullable',
 
@@ -58,12 +58,14 @@ class ValidateService
 
         // << data validation <<------------------------------------------------------------
 
-        $settings = Setting::has('financial_account')->with(['financial_account'])->firstOrFail();
+        $settings = Setting::has('financial_account_to_debit')
+            ->has('financial_account_to_credit')
+            ->with(['financial_account_to_debit', 'financial_account_to_credit'])
+            ->firstOrFail();
         //Log::info($this->settings);
 
 
         $contact = Contact::findOrFail($requestInstance->contact_id);
-
 
 
         $data['id'] = $requestInstance->input('id', null); //for updating the id will always be posted
@@ -77,8 +79,10 @@ class ValidateService
         $data['number_length'] = $settings->minimum_number_length;
         $data['number_postfix'] = $settings->number_postfix;
         $data['date'] = $requestInstance->input('date');
-        $data['financial_account_code'] = $settings->financial_account->code;
-        $data['contact_id'] = $requestInstance->contact_id;
+        $data['debit_financial_account_code'] = $settings->financial_account_to_debit->code;
+        $data['credit_financial_account_code'] = $settings->financial_account_to_credit->code;
+        $data['debit_contact_id'] = $requestInstance->contact_id;
+        $data['credit_contact_id'] = $requestInstance->contact_id;
         $data['contact_name'] = $contact->name;
         $data['contact_address'] = trim($contact->shipping_address_street1 . ' ' . $contact->shipping_address_street2);
         $data['reference'] = $requestInstance->input('reference', null);
@@ -88,7 +92,7 @@ class ValidateService
         $data['salesperson_contact_id'] = $requestInstance->input('salesperson_contact_id', null);
         $data['branch_id'] = $requestInstance->input('branch_id', null);
         $data['store_id'] = $requestInstance->input('store_id', null);
-        $data['expiry_date'] = $requestInstance->input('expiry_date', null);
+        $data['due_date'] = $requestInstance->input('due_date', null);
         $data['terms_and_conditions'] = $requestInstance->input('terms_and_conditions', null);
         $data['memo'] = $requestInstance->input('memo', null);
         $data['status'] = $requestInstance->input('status', null);
@@ -137,11 +141,20 @@ class ValidateService
         $data['total'] = $txnTotal;
 
 
+        //DR ledger
         $data['ledgers'][] = [
-            'financial_account_code' => $settings->financial_account->code,
+            'financial_account_code' => $settings->financial_account_to_debit->code,
             'effect' => 'debit',
             'total' => $data['total'],
-            'contact_id' => $data['contact_id']
+            'contact_id' => $data['debit_contact_id']
+        ];
+
+        //CR ledger
+        $data['ledgers'][] = [
+            'financial_account_code' => $settings->financial_account_to_credit->code,
+            'effect' => 'credit',
+            'total' => $data['total'],
+            'contact_id' => $data['credit_contact_id']
         ];
 
         //print_r($data); exit;

@@ -109,8 +109,10 @@ class RetainerInvoiceService
             $Txn->number_length = $data['number_length'];
             $Txn->number_postfix = $data['number_postfix'];
             $Txn->date = $data['date'];
-            $Txn->financial_account_code = $data['financial_account_code'];
-            $Txn->contact_id = $data['contact_id'];
+            $Txn->debit_financial_account_code = $data['debit_financial_account_code'];
+            $Txn->credit_financial_account_code = $data['credit_financial_account_code'];
+            $Txn->debit_contact_id = $data['debit_contact_id'];
+            $Txn->credit_contact_id = $data['credit_contact_id'];
             $Txn->contact_name = $data['contact_name'];
             $Txn->contact_address = $data['contact_address'];
             $Txn->reference = $data['reference'];
@@ -121,7 +123,7 @@ class RetainerInvoiceService
             $Txn->total = $data['total'];
             $Txn->branch_id = $data['branch_id'];
             $Txn->store_id = $data['store_id'];
-            $Txn->expiry_date = $data['expiry_date'];
+            $Txn->due_date = $data['due_date'];
             $Txn->memo = $data['memo'];
             $Txn->terms_and_conditions = $data['terms_and_conditions'];
             $Txn->status = $data['status'];
@@ -201,10 +203,10 @@ class RetainerInvoiceService
             $Txn->comments()->delete();
 
             //reverse the account balances
-            AccountBalanceUpdateService::update($Txn->ledgers, true);
+            AccountBalanceUpdateService::doubleEntry($Txn->ledgers->toArray(), true);
 
             //reverse the contact balances
-            ContactBalanceUpdateService::update($Txn->ledgers, true);
+            ContactBalanceUpdateService::doubleEntry($Txn->ledgers->toArray(), true);
 
             $Txn->tenant_id = $data['tenant_id'];
             $Txn->created_by = Auth::id();
@@ -214,8 +216,10 @@ class RetainerInvoiceService
             $Txn->number_length = $data['number_length'];
             $Txn->number_postfix = $data['number_postfix'];
             $Txn->date = $data['date'];
-            $Txn->financial_account_code = $data['financial_account_code'];
-            $Txn->contact_id = $data['contact_id'];
+            $Txn->debit_financial_account_code = $data['debit_financial_account_code'];
+            $Txn->credit_financial_account_code = $data['credit_financial_account_code'];
+            $Txn->debit_contact_id = $data['debit_contact_id'];
+            $Txn->credit_contact_id = $data['credit_contact_id'];
             $Txn->contact_name = $data['contact_name'];
             $Txn->contact_address = $data['contact_address'];
             $Txn->reference = $data['reference'];
@@ -226,7 +230,7 @@ class RetainerInvoiceService
             $Txn->total = $data['total'];
             $Txn->branch_id = $data['branch_id'];
             $Txn->store_id = $data['store_id'];
-            $Txn->expiry_date = $data['expiry_date'];
+            $Txn->due_date = $data['due_date'];
             $Txn->memo = $data['memo'];
             $Txn->terms_and_conditions = $data['terms_and_conditions'];
             $Txn->status = $data['status'];
@@ -241,7 +245,7 @@ class RetainerInvoiceService
             RetainerInvoiceItemService::store($data);
 
             //Save the ledgers >> $data['ledgers']; and update the balances
-            //NOTE >> no need to update ledgers since this is not an accounting entry
+            RetainerInvoiceLedgersService::store($data);
 
             //check status and update financial account and contact balances accordingly
             ApprovalService::run($data);

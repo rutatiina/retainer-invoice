@@ -36,19 +36,14 @@ class RetainerInvoiceItem extends Model
         static::addGlobalScope(new TenantIdScope);
     }
 
-    public function getTaxesAttribute($value)
+    public function retainer_invoice()
     {
-        $_array_ = json_decode($value);
-        if (is_array($_array_)) {
-            return $_array_;
-        } else {
-            return [];
-        }
+        return $this->belongsTo('Rutatiina\RetainerInvoice\Models\RetainerInvoice', 'retainer_invoice_id', 'id');
     }
 
-    public function txn()
+    public function taxes()
     {
-        return $this->belongsTo('Rutatiina\FinancialAccounting\Models\Txn', 'txn_id');
+        return $this->hasMany('Rutatiina\RetainerInvoice\Models\RetainerInvoiceItemTax', 'retainer_invoice_item_id', 'id');
     }
 
 }

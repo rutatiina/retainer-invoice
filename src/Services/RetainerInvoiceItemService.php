@@ -21,7 +21,7 @@ class RetainerInvoiceItemService
         //Save the items >> $data['items']
         foreach ($data['items'] as &$item)
         {
-            $item['estimate_id'] = $data['id'];
+            $item['retainer_invoice_id'] = $data['id'];
 
             $itemTaxes = (is_array($item['taxes'])) ? $item['taxes'] : [] ;
             unset($item['taxes']);
@@ -33,7 +33,7 @@ class RetainerInvoiceItemService
                 //save the taxes attached to the item
                 $itemTax = new RetainerInvoiceItemTax;
                 $itemTax->tenant_id = $item['tenant_id'];
-                $itemTax->estimate_id = $item['estimate_id'];
+                $itemTax->retainer_invoice_id = $item['retainer_invoice_id'];
                 $itemTax->estimate_item_id = $itemModel->id;
                 $itemTax->tax_code = $tax['code'];
                 $itemTax->amount = $tax['total'];
