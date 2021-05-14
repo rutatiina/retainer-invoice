@@ -1,3 +1,3 @@
-#Retainer Invoice (Laravel Package)
+# Retainer Invoice (Laravel Package)
 
-##Laravel Package to manage retainer invoices
+## Laravel Package to manage retainer invoices
