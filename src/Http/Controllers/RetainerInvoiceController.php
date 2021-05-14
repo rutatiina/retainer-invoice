@@ -211,7 +211,7 @@ class RetainerInvoiceController extends Controller
             'status' => true,
             'messages' => ['Retainer invoice updated'],
             'number' => 0,
-            'callback' => URL::route('estimates.show', [$storeService->id], false)
+            'callback' => URL::route('retainer-invoices.show', [$storeService->id], false)
         ];
     }
 

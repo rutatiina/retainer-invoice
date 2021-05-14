@@ -27,7 +27,7 @@ class RetainerInvoiceService
         $taxes = Tax::all()->keyBy('code');
 
         $txn = RetainerInvoice::findOrFail($id);
-        $txn->load('contact', 'financial_account', 'items.taxes');
+        $txn->load('contact', 'items.taxes');
         $txn->setAppends(['taxes']);
 
         $attributes = $txn->toArray();
@@ -36,6 +36,7 @@ class RetainerInvoiceService
 
         $attributes['_method'] = 'PATCH';
 
+        $attributes['contact_id'] = $attributes['debit_contact_id'];
         $attributes['contact']['currency'] = $attributes['contact']['currency_and_exchange_rate'];
         $attributes['contact']['currencies'] = $attributes['contact']['currencies_and_exchange_rates'];
 
@@ -49,11 +50,6 @@ class RetainerInvoiceService
         ];
         $attributes['contact_notes'] = null;
         $attributes['terms_and_conditions'] = null;
-
-        unset($attributes['txn_entree_id']); //!important
-        unset($attributes['txn_type_id']); //!important
-
-        //print_r($attributes['items']); exit;
 
         foreach ($attributes['items'] as $key => $item)
         {
@@ -198,6 +194,7 @@ class RetainerInvoiceService
             }
 
             //Delete affected relations
+            $Txn->ledgers()->delete();
             $Txn->items()->delete();
             $Txn->item_taxes()->delete();
             $Txn->comments()->delete();
@@ -296,14 +293,16 @@ class RetainerInvoiceService
             }
 
             //Delete affected relations
+            $Txn->ledgers()->delete();
             $Txn->items()->delete();
             $Txn->item_taxes()->delete();
+            $Txn->comments()->delete();
 
             //reverse the account balances
-            AccountBalanceUpdateService::update($Txn->ledgers, true);
+            AccountBalanceUpdateService::doubleEntry($Txn->ledgers, true);
 
             //reverse the contact balances
-            ContactBalanceUpdateService::update($Txn->ledgers, true);
+            ContactBalanceUpdateService::doubleEntry($Txn->ledgers, true);
 
             $Txn->delete();
 

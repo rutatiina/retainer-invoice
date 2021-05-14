@@ -34,7 +34,7 @@ class RetainerInvoiceItemService
                 $itemTax = new RetainerInvoiceItemTax;
                 $itemTax->tenant_id = $item['tenant_id'];
                 $itemTax->retainer_invoice_id = $item['retainer_invoice_id'];
-                $itemTax->estimate_item_id = $itemModel->id;
+                $itemTax->retainer_invoice_item_id = $itemModel->id;
                 $itemTax->tax_code = $tax['code'];
                 $itemTax->amount = $tax['total'];
                 $itemTax->inclusive = $tax['inclusive'];
