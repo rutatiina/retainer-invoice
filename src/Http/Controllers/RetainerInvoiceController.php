@@ -2,42 +2,22 @@
 
 namespace Rutatiina\RetainerInvoice\Http\Controllers;
 
-use Rutatiina\Estimate\Services\EstimateService;
 use Rutatiina\RetainerInvoice\Models\Setting;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Request as FacadesRequest;
-use Illuminate\Support\Facades\View;
 use Rutatiina\RetainerInvoice\Services\RetainerInvoiceService;
-use Rutatiina\Tax\Models\Tax;
 use Rutatiina\RetainerInvoice\Models\RetainerInvoice;
-use Rutatiina\FinancialAccounting\Classes\Transaction;
 use Rutatiina\Item\Traits\ItemsSelect2DataTrait;
-use Rutatiina\Tenant\Traits\TenantTrait;
 use Rutatiina\Contact\Traits\ContactTrait;
-use Rutatiina\FinancialAccounting\Traits\FinancialAccountingTrait;
 use Yajra\DataTables\Facades\DataTables;
-
-use Rutatiina\RetainerInvoice\Classes\Store as TxnStore;
-use Rutatiina\RetainerInvoice\Classes\Approve as TxnApprove;
-use Rutatiina\RetainerInvoice\Classes\Read as TxnRead;
-use Rutatiina\RetainerInvoice\Classes\Copy as TxnCopy;
-use Rutatiina\RetainerInvoice\Classes\Number as TxnNumber;
-use Rutatiina\RetainerInvoice\Traits\Item as TxnItem;
-use Rutatiina\RetainerInvoice\Classes\Edit as TxnEdit;
-use Rutatiina\RetainerInvoice\Classes\Update as TxnUpdate;
 
 class RetainerInvoiceController extends Controller
 {
     use ContactTrait;
     use ItemsSelect2DataTrait;
-
-    //calls AccountingTrait
-
-    use TxnItem;
 
     // >> get the item attributes template << !!important
 
@@ -131,10 +111,6 @@ class RetainerInvoiceController extends Controller
 
     public function store(Request $request)
     {
-        $TxnStore = new TxnStore();
-        $TxnStore->txnInsertData = $request->all();
-        $insert = $TxnStore->run();
-
         $storeService = RetainerInvoiceService::store($request);
 
         if ($storeService == false)
@@ -240,14 +216,13 @@ class RetainerInvoiceController extends Controller
 
     public function approve($id)
     {
-        $TxnApprove = new TxnApprove();
-        $approve = $TxnApprove->run($id);
+        $approve = RetainerInvoiceService::approve($id);
 
         if ($approve == false)
         {
             return [
                 'status' => false,
-                'messages' => $TxnApprove->errors
+                'messages' => RetainerInvoiceService::$errors
             ];
         }
 
@@ -255,7 +230,6 @@ class RetainerInvoiceController extends Controller
             'status' => true,
             'messages' => ['Retainer Invoice Approved'],
         ];
-
     }
 
     public function copy($id)
@@ -266,11 +240,7 @@ class RetainerInvoiceController extends Controller
             return view('l-limitless-bs4.layout_2-ltr-default.appVue');
         }
 
-        $TxnCopy = new TxnCopy();
-        $txnAttributes = $TxnCopy->run($id);
-
-        $TxnNumber = new TxnNumber();
-        $txnAttributes['number'] = null;
+        $txnAttributes = RetainerInvoiceService::copy($id);
 
         $data = [
             'pageTitle' => 'Copy Retainer Invoice', #required
@@ -279,18 +249,7 @@ class RetainerInvoiceController extends Controller
             'txnAttributes' => $txnAttributes, #required
         ];
 
-        if (FacadesRequest::wantsJson())
-        {
-            return $data;
-        }
-
-        $txn = Transaction::transaction($id);
-        $txn->number = null;
-        return view('accounting::sales.retainer-invoices.copy')->with([
-            'txn' => $txn,
-            'contacts' => static::contactsByTypes(['customer']),
-            'taxes' => self::taxes()
-        ]);
+        return $data;
     }
 
     public function datatables(Request $request)

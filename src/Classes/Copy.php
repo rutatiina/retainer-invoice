@@ -12,7 +12,8 @@ class Copy
     use TxnTraitsInit;
 
     public function __construct()
-    {}
+    {
+    }
 
     public function run($id)
     {
@@ -51,17 +52,11 @@ class Copy
         unset($attributes['txn_entree_id']); //!important
         unset($attributes['txn_type_id']); //!important
 
-        foreach($attributes['items'] as $key => $item) {
-
-            if (in_array($item['type'], ['txn', 'txn_type', 'tax'])) {
-                unset($attributes['items'][$key]);
-                continue;
-            }
-
+        foreach ($attributes['items'] as $key => $item)
+        {
             $selectedItem = [
-                'id' => $item['type_id'],
+                'id' => $item['item_id'],
                 'name' => $item['name'],
-                'type' => $item['type'],
                 'description' => $item['description'],
                 'rate' => $item['rate'],
                 'tax_method' => 'inclusive',
@@ -72,7 +67,8 @@ class Copy
             $attributes['items'][$key]['selectedTaxes'] = []; #required
             $attributes['items'][$key]['displayTotal'] = 0; #required
 
-            foreach ($item['taxes'] as $tax_id) {
+            foreach ($item['taxes'] as $tax_id)
+            {
                 $attributes['items'][$key]['selectedTaxes'][] = $taxes[$tax_id];
             }
 
