@@ -37,8 +37,8 @@ class RetainerInvoiceService
         $attributes['_method'] = 'PATCH';
 
         $attributes['contact_id'] = $attributes['debit_contact_id'];
-        $attributes['contact']['currency'] = $attributes['contact']['currency_and_exchange_rate'];
-        $attributes['contact']['currencies'] = $attributes['contact']['currencies_and_exchange_rates'];
+        $attributes['contact']['currency'] = $txn->contact->currency_and_exchange_rate;
+        $attributes['contact']['currencies'] = $txn->contact->currencies_and_exchange_rates;
 
         $attributes['taxes'] = json_decode('{}');
         $attributes['isRecurring'] = false;
@@ -350,8 +350,8 @@ class RetainerInvoiceService
         $attributes['expiry_date'] = '';
         #reset some values
 
-        $attributes['contact']['currency'] = $attributes['contact']['currency_and_exchange_rate'];
-        $attributes['contact']['currencies'] = $attributes['contact']['currencies_and_exchange_rates'];
+        $attributes['contact']['currency'] = $txn->contact->currency_and_exchange_rate;
+        $attributes['contact']['currencies'] = $txn->contact->currencies_and_exchange_rates;
 
         $attributes['contact_id'] = $attributes['debit_contact_id'];
         $attributes['taxes'] = json_decode('{}');
