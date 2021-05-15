@@ -58,7 +58,7 @@ class CreateRgRetainerInvoicesTable extends Migration
             $table->unsignedBigInteger('salesperson_id')->nullable();
             $table->string('payment_mode', 50)->nullable();
             $table->string('payment_terms', 100)->nullable();
-            $table->string('memo', 250)->nullable();
+            $table->string('contact_notes', 250)->nullable();
             $table->string('terms_and_conditions', 250)->nullable();
 
         });

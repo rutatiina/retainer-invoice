@@ -94,7 +94,7 @@ class ValidateService
         $data['store_id'] = $requestInstance->input('store_id', null);
         $data['due_date'] = $requestInstance->input('due_date', null);
         $data['terms_and_conditions'] = $requestInstance->input('terms_and_conditions', null);
-        $data['memo'] = $requestInstance->input('memo', null);
+        $data['contact_notes'] = $requestInstance->input('contact_notes', null);
         $data['status'] = $requestInstance->input('status', null);
 
 

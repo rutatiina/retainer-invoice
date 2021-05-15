@@ -57,10 +57,10 @@ class RetainerInvoiceController extends Controller
 
     private function nextNumber()
     {
-        $txn = RetainerInvoice::latest()->first();
+        $count = RetainerInvoice::count();
         $settings = Setting::first();
 
-        return $settings->number_prefix . (str_pad((optional($txn)->number + 1), $settings->minimum_number_length, "0", STR_PAD_LEFT)) . $settings->number_postfix;
+        return $settings->number_prefix . (str_pad(($count + 1), $settings->minimum_number_length, "0", STR_PAD_LEFT)) . $settings->number_postfix;
     }
 
     public function create()
@@ -92,7 +92,27 @@ class RetainerInvoiceController extends Controller
         ];
         $txnAttributes['contact_notes'] = null;
         $txnAttributes['terms_and_conditions'] = null;
-        $txnAttributes['items'] = [$this->itemCreate()];
+        $txnAttributes['items'] = [
+            [
+                'selectedTaxes' => [], #required
+                'selectedItem' => json_decode('{}'), #required
+                'displayTotal' => 0,
+                'name' => '',
+                'description' => '',
+                'rate' => 0,
+                'quantity' => 1,
+                'total' => 0,
+                'taxes' => [],
+
+                'type' => '',
+                'type_id' => '',
+                'contact_id' => '',
+                'tax_id' => '',
+                'units' => '',
+                'batch' => '',
+                'expiry' => ''
+            ]
+        ];
 
         unset($txnAttributes['txn_entree_id']); //!important
         unset($txnAttributes['txn_type_id']); //!important
