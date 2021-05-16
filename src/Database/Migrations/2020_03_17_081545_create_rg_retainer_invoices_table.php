@@ -50,6 +50,7 @@ class CreateRgRetainerInvoicesTable extends Migration
             $table->unsignedDecimal('taxable_amount', 20,5)->default(0);
             $table->unsignedDecimal('total_paid', 20, 5)->default(0);
             $table->unsignedDecimal('total_earned', 20, 5)->default(0);
+            $table->boolean('balances_where_updated', 20, 5)->default(0);
             $table->unsignedBigInteger('branch_id')->nullable();
             $table->unsignedBigInteger('store_id')->nullable();
             $table->date('due_date')->nullable();
