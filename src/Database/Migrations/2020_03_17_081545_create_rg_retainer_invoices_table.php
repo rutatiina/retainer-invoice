@@ -26,14 +26,9 @@ class CreateRgRetainerInvoicesTable extends Migration
 
             //>> table columns
             $table->unsignedBigInteger('project_id')->nullable();
-            $table->unsignedBigInteger('parent_id');
-            $table->string('external_key', 100);
             $table->unsignedBigInteger('app_id');
             $table->string('document_name', 50)->default('Invoice');
-            $table->string('number_prefix', 50)->nullable();
-            $table->unsignedBigInteger('number');
-            $table->unsignedTinyInteger('number_length');
-            $table->string('number_postfix', 50)->nullable();
+            $table->string('number', 250);
             $table->date('date');
             $table->time('time');
             $table->unsignedBigInteger('debit_financial_account_code')->nullable();

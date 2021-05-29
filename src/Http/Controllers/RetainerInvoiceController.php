@@ -55,14 +55,6 @@ class RetainerInvoiceController extends Controller
         ];
     }
 
-    private function nextNumber()
-    {
-        $count = RetainerInvoice::count();
-        $settings = Setting::first();
-
-        return $settings->number_prefix . (str_pad(($count + 1), $settings->minimum_number_length, "0", STR_PAD_LEFT)) . $settings->number_postfix;
-    }
-
     public function create()
     {
         //load the vue version of the app
@@ -75,7 +67,7 @@ class RetainerInvoiceController extends Controller
 
         $txnAttributes = (new RetainerInvoice)->rgGetAttributes();
 
-        $txnAttributes['number'] = $this->nextNumber();
+        $txnAttributes['number'] = RetainerInvoiceService::nextNumber();
         $txnAttributes['status'] = 'Approved';
         $txnAttributes['contact_id'] = '';
         $txnAttributes['contact'] = json_decode('{"currencies":[]}'); #required

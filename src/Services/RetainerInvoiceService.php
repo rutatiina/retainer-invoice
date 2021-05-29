@@ -11,6 +11,7 @@ use Rutatiina\RetainerInvoice\Models\RetainerInvoiceItem;
 use Rutatiina\RetainerInvoice\Models\RetainerInvoiceItemTax;
 use Rutatiina\FinancialAccounting\Services\AccountBalanceUpdateService;
 use Rutatiina\FinancialAccounting\Services\ContactBalanceUpdateService;
+use Rutatiina\RetainerInvoice\Models\Setting;
 use Rutatiina\Tax\Models\Tax;
 
 class RetainerInvoiceService
@@ -20,6 +21,14 @@ class RetainerInvoiceService
     public function __construct()
     {
         //
+    }
+
+    public static function nextNumber()
+    {
+        $count = RetainerInvoice::count();
+        $settings = Setting::first();
+
+        return $settings->number_prefix . (str_pad(($count + 1), $settings->minimum_number_length, "0", STR_PAD_LEFT)) . $settings->number_postfix;
     }
 
     public static function edit($id)
@@ -41,15 +50,6 @@ class RetainerInvoiceService
         $attributes['contact']['currencies'] = $txn->contact->currencies_and_exchange_rates;
 
         $attributes['taxes'] = json_decode('{}');
-        $attributes['isRecurring'] = false;
-        $attributes['recurring'] = [
-            'date_range' => [],
-            'day_of_month' => '*',
-            'month' => '*',
-            'day_of_week' => '*',
-        ];
-        $attributes['contact_notes'] = null;
-        $attributes['terms_and_conditions'] = null;
 
         foreach ($attributes['items'] as $key => $item)
         {
@@ -99,10 +99,7 @@ class RetainerInvoiceService
             $Txn->tenant_id = $data['tenant_id'];
             $Txn->created_by = Auth::id();
             $Txn->document_name = $data['document_name'];
-            $Txn->number_prefix = $data['number_prefix'];
             $Txn->number = $data['number'];
-            $Txn->number_length = $data['number_length'];
-            $Txn->number_postfix = $data['number_postfix'];
             $Txn->date = $data['date'];
             $Txn->debit_financial_account_code = $data['debit_financial_account_code'];
             $Txn->credit_financial_account_code = $data['credit_financial_account_code'];
@@ -207,10 +204,7 @@ class RetainerInvoiceService
             $Txn->tenant_id = $data['tenant_id'];
             $Txn->created_by = Auth::id();
             $Txn->document_name = $data['document_name'];
-            $Txn->number_prefix = $data['number_prefix'];
             $Txn->number = $data['number'];
-            $Txn->number_length = $data['number_length'];
-            $Txn->number_postfix = $data['number_postfix'];
             $Txn->date = $data['date'];
             $Txn->debit_financial_account_code = $data['debit_financial_account_code'];
             $Txn->credit_financial_account_code = $data['credit_financial_account_code'];
@@ -345,6 +339,7 @@ class RetainerInvoiceService
         $attributes = $txn->toArray();
 
         #reset some values
+        $attributes['number'] = self::nextNumber();
         $attributes['date'] = date('Y-m-d');
         $attributes['due_date'] = '';
         $attributes['expiry_date'] = '';
@@ -355,8 +350,6 @@ class RetainerInvoiceService
 
         $attributes['contact_id'] = $attributes['debit_contact_id'];
         $attributes['taxes'] = json_decode('{}');
-        $attributes['contact_notes'] = null;
-        $attributes['terms_and_conditions'] = null;
 
         foreach ($attributes['items'] as $key => $item)
         {
