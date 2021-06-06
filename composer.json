@@ -17,5 +17,12 @@
         "psr-4": {
             "Rutatiina\\RetainerInvoice\\": "src/"
         }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Rutatiina\\RetainerInvoice\\RetainerInvoiceServiceProvider"
+            ]
+        }
     }
 }

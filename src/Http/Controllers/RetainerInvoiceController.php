@@ -75,13 +75,6 @@ class RetainerInvoiceController extends Controller
         $txnAttributes['base_currency'] = $tenant->base_currency;
         $txnAttributes['quote_currency'] = $tenant->base_currency;
         $txnAttributes['taxes'] = json_decode('{}');
-        $txnAttributes['isRecurring'] = false;
-        $txnAttributes['recurring'] = [
-            'date_range' => [],
-            'day_of_month' => '*',
-            'month' => '*',
-            'day_of_week' => '*',
-        ];
         $txnAttributes['contact_notes'] = null;
         $txnAttributes['terms_and_conditions'] = null;
         $txnAttributes['items'] = [
@@ -106,8 +99,6 @@ class RetainerInvoiceController extends Controller
             ]
         ];
 
-        unset($txnAttributes['txn_entree_id']); //!important
-        unset($txnAttributes['txn_type_id']); //!important
         unset($txnAttributes['debit_contact_id']); //!important
         unset($txnAttributes['credit_contact_id']); //!important
 

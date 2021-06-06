@@ -133,12 +133,12 @@ class RetainerInvoice extends Model
         }
     }
 
-    public function debit_account()
+    public function debit_financial_account()
     {
         return $this->hasOne('Rutatiina\FinancialAccounting\Models\Account', 'id', 'debit');
     }
 
-    public function credit_account()
+    public function credit_financial_account()
     {
         return $this->hasOne('Rutatiina\FinancialAccounting\Models\Account', 'id', 'credit');
     }
