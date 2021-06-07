@@ -2,7 +2,6 @@
 
 namespace Rutatiina\RetainerInvoice\Http\Controllers;
 
-use Rutatiina\RetainerInvoice\Models\Setting;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
