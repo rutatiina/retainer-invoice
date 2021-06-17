@@ -45,7 +45,6 @@ class RetainerInvoiceService
 
         $attributes['_method'] = 'PATCH';
 
-        $attributes['contact_id'] = $attributes['debit_contact_id'];
         $attributes['contact']['currency'] = $txn->contact->currency_and_exchange_rate;
         $attributes['contact']['currencies'] = $txn->contact->currencies_and_exchange_rates;
 
@@ -103,8 +102,7 @@ class RetainerInvoiceService
             $Txn->date = $data['date'];
             $Txn->debit_financial_account_code = $data['debit_financial_account_code'];
             $Txn->credit_financial_account_code = $data['credit_financial_account_code'];
-            $Txn->debit_contact_id = $data['debit_contact_id'];
-            $Txn->credit_contact_id = $data['credit_contact_id'];
+            $Txn->contact_id = $data['contact_id'];
             $Txn->contact_name = $data['contact_name'];
             $Txn->contact_address = $data['contact_address'];
             $Txn->reference = $data['reference'];
@@ -208,8 +206,7 @@ class RetainerInvoiceService
             $Txn->date = $data['date'];
             $Txn->debit_financial_account_code = $data['debit_financial_account_code'];
             $Txn->credit_financial_account_code = $data['credit_financial_account_code'];
-            $Txn->debit_contact_id = $data['debit_contact_id'];
-            $Txn->credit_contact_id = $data['credit_contact_id'];
+            $Txn->contact_id = $data['contact_id'];
             $Txn->contact_name = $data['contact_name'];
             $Txn->contact_address = $data['contact_address'];
             $Txn->reference = $data['reference'];
@@ -348,7 +345,6 @@ class RetainerInvoiceService
         $attributes['contact']['currency'] = $txn->contact->currency_and_exchange_rate;
         $attributes['contact']['currencies'] = $txn->contact->currencies_and_exchange_rates;
 
-        $attributes['contact_id'] = $attributes['debit_contact_id'];
         $attributes['taxes'] = json_decode('{}');
 
         foreach ($attributes['items'] as $key => $item)
