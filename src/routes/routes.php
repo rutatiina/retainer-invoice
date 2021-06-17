@@ -11,7 +11,7 @@ Route::group(['middleware' => ['web', 'auth', 'tenant', 'service.accounting']], 
 
     });
 
-    Route::resource('retainer-invoices/settings', 'Rutatiina\RetainerInvoice\Http\Controllers\SettingsController');
+    Route::resource('retainer-invoices/settings', 'Rutatiina\RetainerInvoice\Http\Controllers\RetainerInvoiceSettingsController');
     Route::resource('retainer-invoices', 'Rutatiina\RetainerInvoice\Http\Controllers\RetainerInvoiceController');
 
 });

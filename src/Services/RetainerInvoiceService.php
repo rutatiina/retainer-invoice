@@ -11,7 +11,7 @@ use Rutatiina\RetainerInvoice\Models\RetainerInvoiceItem;
 use Rutatiina\RetainerInvoice\Models\RetainerInvoiceItemTax;
 use Rutatiina\FinancialAccounting\Services\AccountBalanceUpdateService;
 use Rutatiina\FinancialAccounting\Services\ContactBalanceUpdateService;
-use Rutatiina\RetainerInvoice\Models\Setting;
+use Rutatiina\RetainerInvoice\Models\RetainerInvoiceSetting;
 use Rutatiina\Tax\Models\Tax;
 
 class RetainerInvoiceService
@@ -26,7 +26,7 @@ class RetainerInvoiceService
     public static function nextNumber()
     {
         $count = RetainerInvoice::count();
-        $settings = Setting::first();
+        $settings = RetainerInvoiceSetting::first();
 
         return $settings->number_prefix . (str_pad(($count + 1), $settings->minimum_number_length, "0", STR_PAD_LEFT)) . $settings->number_postfix;
     }
