@@ -6,7 +6,7 @@ use Rutatiina\RetainerInvoice\Models\RetainerInvoiceItem;
 use Rutatiina\RetainerInvoice\Models\RetainerInvoiceItemTax;
 use Rutatiina\RetainerInvoice\Models\RetainerInvoiceLedger;
 
-class RetainerInvoiceLedgersService
+class RetainerInvoiceLedgerService
 {
     public static $errors = [];
 

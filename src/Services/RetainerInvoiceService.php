@@ -128,7 +128,7 @@ class RetainerInvoiceService
             RetainerInvoiceItemService::store($data);
 
             //Save the ledgers >> $data['ledgers']; and update the balances
-            //NOTE >> no need to update ledgers since this is not an accounting entry
+            RetainerInvoiceLedgerService::store($data);
 
             //check status and update financial account and contact balances accordingly
             ApprovalService::run($data);
@@ -232,7 +232,7 @@ class RetainerInvoiceService
             RetainerInvoiceItemService::store($data);
 
             //Save the ledgers >> $data['ledgers']; and update the balances
-            RetainerInvoiceLedgersService::store($data);
+            RetainerInvoiceLedgerService::store($data);
 
             //check status and update financial account and contact balances accordingly
             ApprovalService::run($data);
@@ -392,11 +392,16 @@ class RetainerInvoiceService
 
         try
         {
-            ApprovalService::run($data);
+            $data['status'] = 'approved';
+            $approvalService = ApprovalService::run($data);
 
             //update the status of the txn
-            $Txn->status = 'Approved';
-            $Txn->save();
+            if ($approvalService)
+            {
+                $Txn->status = 'approved';
+                $Txn->balances_where_updated = 1;
+                $Txn->save();
+            }
 
             DB::connection('tenant')->commit();
 
