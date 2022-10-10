@@ -3,11 +3,13 @@
 namespace Rutatiina\RetainerInvoice\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Rutatiina\Tenant\Scopes\TenantIdScope;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class RetainerInvoice extends Model
 {
+    use SoftDeletes;
     use LogsActivity;
 
     protected static $logName = 'Txn';
@@ -59,6 +61,18 @@ class RetainerInvoice extends Model
              });
              $txn->ledgers()->each(function($row) {
                 $row->delete();
+             });
+        });
+
+        self::restored(function($txn) {
+             $txn->items()->each(function($row) {
+                $row->restore();
+             });
+             $txn->comments()->each(function($row) {
+                $row->restore();
+             });
+             $txn->ledgers()->each(function($row) {
+                $row->restore();
              });
         });
 
