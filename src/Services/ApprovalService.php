@@ -2,6 +2,7 @@
 
 namespace Rutatiina\RetainerInvoice\Services;
 
+use Rutatiina\FinancialAccounting\Services\ItemBalanceUpdateService;
 use Rutatiina\FinancialAccounting\Services\AccountBalanceUpdateService;
 use Rutatiina\FinancialAccounting\Services\ContactBalanceUpdateService;
 
@@ -29,6 +30,9 @@ trait ApprovalService
 
         //Update the contact balances
         ContactBalanceUpdateService::doubleEntry($data);
+
+        //Update the item balances
+        ItemBalanceUpdateService::entry($data);
 
         return true;
     }

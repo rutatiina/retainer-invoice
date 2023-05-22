@@ -2,17 +2,18 @@
 
 namespace Rutatiina\RetainerInvoice\Services;
 
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Auth;
+use Rutatiina\Tax\Models\Tax;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Rutatiina\RetainerInvoice\Models\RetainerInvoice;
 use Rutatiina\RetainerInvoice\Models\RetainerInvoiceItem;
 use Rutatiina\RetainerInvoice\Models\RetainerInvoiceItemTax;
+use Rutatiina\RetainerInvoice\Models\RetainerInvoiceSetting;
+use Rutatiina\FinancialAccounting\Services\ItemBalanceUpdateService;
 use Rutatiina\FinancialAccounting\Services\AccountBalanceUpdateService;
 use Rutatiina\FinancialAccounting\Services\ContactBalanceUpdateService;
-use Rutatiina\RetainerInvoice\Models\RetainerInvoiceSetting;
-use Rutatiina\Tax\Models\Tax;
 
 class RetainerInvoiceService
 {
@@ -200,6 +201,9 @@ class RetainerInvoiceService
             //reverse the contact balances
             ContactBalanceUpdateService::doubleEntry($Txn->toArray(), true);
 
+            //Update the item balances
+            ItemBalanceUpdateService::entry($Txn->toArray(), true);
+
             $Txn->tenant_id = $data['tenant_id'];
             $Txn->created_by = Auth::id();
             $Txn->document_name = $data['document_name'];
@@ -294,6 +298,9 @@ class RetainerInvoiceService
 
             //reverse the contact balances
             ContactBalanceUpdateService::doubleEntry($Txn, true);
+
+            //Update the item balances
+            ItemBalanceUpdateService::entry($Txn, true);
 
             $Txn->delete();
 
