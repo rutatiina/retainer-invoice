@@ -129,7 +129,7 @@ class RetainerInvoiceService
             //Save the items >> $data['items']
             RetainerInvoiceItemService::store($data);
 
-            $Txn = $Txn->refresh();
+            $Txn->refresh();
 
             //check status and update financial account and contact balances accordingly
             ApprovalService::run($Txn);
@@ -234,7 +234,7 @@ class RetainerInvoiceService
             //Save the items >> $data['items']
             RetainerInvoiceItemService::store($data);
 
-            $Txn = $Txn->refresh();
+            $Txn->refresh();
 
             //check status and update financial account and contact balances accordingly
             ApprovalService::run($Txn);
