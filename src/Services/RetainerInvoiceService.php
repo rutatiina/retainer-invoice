@@ -129,11 +129,10 @@ class RetainerInvoiceService
             //Save the items >> $data['items']
             RetainerInvoiceItemService::store($data);
 
-            //Save the ledgers >> $data['ledgers']; and update the balances
-            RetainerInvoiceLedgerService::store($data);
+            $Txn = $Txn->refresh();
 
             //check status and update financial account and contact balances accordingly
-            ApprovalService::run($data);
+            ApprovalService::run($Txn);
 
             DB::connection('tenant')->commit();
 
@@ -181,7 +180,7 @@ class RetainerInvoiceService
 
         try
         {
-            $Txn = RetainerInvoice::with('items', 'ledgers')->findOrFail($data['id']);
+            $Txn = RetainerInvoice::with('items')->findOrFail($data['id']);
 
             if ($Txn->status == 'approved')
             {
@@ -190,7 +189,6 @@ class RetainerInvoiceService
             }
 
             //Delete affected relations
-            $Txn->ledgers()->delete();
             $Txn->items()->delete();
             $Txn->item_taxes()->delete();
             $Txn->comments()->delete();
@@ -236,11 +234,10 @@ class RetainerInvoiceService
             //Save the items >> $data['items']
             RetainerInvoiceItemService::store($data);
 
-            //Save the ledgers >> $data['ledgers']; and update the balances
-            RetainerInvoiceLedgerService::store($data);
+            $Txn = $Txn->refresh();
 
             //check status and update financial account and contact balances accordingly
-            ApprovalService::run($data);
+            ApprovalService::run($Txn);
 
             DB::connection('tenant')->commit();
 
@@ -279,7 +276,7 @@ class RetainerInvoiceService
 
         try
         {
-            $Txn = RetainerInvoice::with('items', 'ledgers')->findOrFail($id);
+            $Txn = RetainerInvoice::with('items')->findOrFail($id);
 
             if ($Txn->status == 'approved')
             {
@@ -288,7 +285,6 @@ class RetainerInvoiceService
             }
 
             //Delete affected relations
-            $Txn->ledgers()->delete();
             $Txn->items()->delete();
             $Txn->item_taxes()->delete();
             $Txn->comments()->delete();
@@ -385,7 +381,7 @@ class RetainerInvoiceService
 
     public static function approve($id)
     {
-        $Txn = RetainerInvoice::with(['ledgers'])->findOrFail($id);
+        $Txn = RetainerInvoice::findOrFail($id);
 
         if (strtolower($Txn->status) != 'draft')
         {
